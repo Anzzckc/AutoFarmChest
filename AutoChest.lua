@@ -1,8 +1,3 @@
-_G.ChestConfig = {
-    AutoHop = false,
-    Speed = 300
-}
-
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UIS = game:GetService("UserInputService")
@@ -19,13 +14,11 @@ if not LocalPlayer.Character then
 end
 LocalPlayer.Character:WaitForChild("HumanoidRootPart")
 
-task.wait(4)
+task.wait(10)
 
 local Remote = game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("CommF_")
 local args = {"SetTeam", "Marines"}
 Remote:InvokeServer(unpack(args))
-
-repeat task.wait(1) until LocalPlayer.Team and LocalPlayer.Team.Name == "Marines"
 
 task.wait(1)
 
