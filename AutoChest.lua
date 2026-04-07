@@ -1,11 +1,11 @@
+repeat task.wait() until game:IsLoaded() and game.Players.LocalPlayer
+
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UIS = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local CoreGui = game:GetService("CoreGui")
 local VirtualUser = game:GetService("VirtualUser")
-
-repeat task.wait() until game:IsLoaded()
 
 local LocalPlayer = Players.LocalPlayer
 
@@ -14,13 +14,11 @@ if not LocalPlayer.Character then
 end
 LocalPlayer.Character:WaitForChild("HumanoidRootPart")
 
-task.wait(10)
-
 local Remote = game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("CommF_")
 local args = {"SetTeam", "Marines"}
 Remote:InvokeServer(unpack(args))
 
-task.wait(1)
+task.wait(2)
 
 local Config = _G.ChestConfig or {}
 local AutoHop = Config.AutoHop == true
