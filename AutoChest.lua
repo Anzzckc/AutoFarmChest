@@ -14,6 +14,8 @@ if not LocalPlayer.Character then
 end
 LocalPlayer.Character:WaitForChild("HumanoidRootPart")
 
+task.wait(4)
+
 local Remote = game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("CommF_")
 local args = {"SetTeam", "Marines"}
 Remote:InvokeServer(unpack(args))
