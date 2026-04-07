@@ -1,11 +1,8 @@
-task.wait(4)
-
-local args = {
-	"SetTeam",
-	"Marines"
+_G.ChestConfig = {
+    AutoHop = false,
+    Speed = 300
 }
 
-game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("CommF_"):InvokeServer(unpack(args))
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UIS = game:GetService("UserInputService")
@@ -22,9 +19,18 @@ if not LocalPlayer.Character then
 end
 LocalPlayer.Character:WaitForChild("HumanoidRootPart")
 
--- Đọc config từ _G (hỗ trợ cả getgenv nếu cần)
+task.wait(4)
+
+local Remote = game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("CommF_")
+local args = {"SetTeam", "Marines"}
+Remote:InvokeServer(unpack(args))
+
+repeat task.wait(1) until LocalPlayer.Team and LocalPlayer.Team.Name == "Marines"
+
+task.wait(1)
+
 local Config = _G.ChestConfig or {}
-local AutoHop = Config.AutoHop == true   -- chỉ true mới bật, mặc định false
+local AutoHop = Config.AutoHop == true
 local MaxSpeed = tonumber(Config.Speed) or 300
 
 local TOGGLE_ICON_ID = 80404510751545
@@ -200,7 +206,6 @@ local function formatNumber(num)
     if isNegative then num = -num end
     local str = tostring(math.floor(num))
     if str == "0" then return "0" end
-    
     local formatted = ""
     local count = 0
     for i = #str, 1, -1 do
@@ -210,7 +215,6 @@ local function formatNumber(num)
             formatted = "," .. formatted
         end
     end
-    
     if isNegative then formatted = "-" .. formatted end
     return formatted
 end
@@ -253,78 +257,75 @@ task.spawn(function()
     end
 end)
 
-local function getCharacter()  
-    if not LocalPlayer.Character then  
-        LocalPlayer.CharacterAdded:Wait()  
-    end  
-    LocalPlayer.Character:WaitForChild("HumanoidRootPart")  
-    return LocalPlayer.Character  
-end  
+local function getCharacter()
+    if not LocalPlayer.Character then
+        LocalPlayer.CharacterAdded:Wait()
+    end
+    LocalPlayer.Character:WaitForChild("HumanoidRootPart")
+    return LocalPlayer.Character
+end
 
-local function DistanceFromPlrSort(ObjectList)  
-    local RootPart = getCharacter().HumanoidRootPart  
-    table.sort(ObjectList, function(ChestA, ChestB)  
-        local RootPos = RootPart.Position  
-        local DistanceA = (RootPos - ChestA.Position).Magnitude  
-        local DistanceB = (RootPos - ChestB.Position).Magnitude  
-        return DistanceA < DistanceB  
-    end)  
-end  
+local function DistanceFromPlrSort(ObjectList)
+    local RootPart = getCharacter().HumanoidRootPart
+    table.sort(ObjectList, function(ChestA, ChestB)
+        local RootPos = RootPart.Position
+        local DistanceA = (RootPos - ChestA.Position).Magnitude
+        local DistanceB = (RootPos - ChestB.Position).Magnitude
+        return DistanceA < DistanceB
+    end)
+end
 
-local UncheckedChests = {}  
-local FirstRun = true  
+local UncheckedChests = {}
+local FirstRun = true
 
-local function getChestsSorted()  
-    if FirstRun then  
-        FirstRun = false  
-        for _, Object in pairs(game:GetDescendants()) do  
-            if Object.Name:find("Chest") and Object.ClassName == "Part" then  
-                table.insert(UncheckedChests, Object)  
-            end  
-        end  
-    end  
-    local Chests = {}  
-    for _, Chest in pairs(UncheckedChests) do  
-        if Chest:FindFirstChild("TouchInterest") then  
-            table.insert(Chests, Chest)  
-        end  
-    end  
-    DistanceFromPlrSort(Chests)  
-    return Chests  
-end  
+local function getChestsSorted()
+    if FirstRun then
+        FirstRun = false
+        for _, Object in pairs(game:GetDescendants()) do
+            if Object.Name:find("Chest") and Object.ClassName == "Part" then
+                table.insert(UncheckedChests, Object)
+            end
+        end
+    end
+    local Chests = {}
+    for _, Chest in pairs(UncheckedChests) do
+        if Chest:FindFirstChild("TouchInterest") then
+            table.insert(Chests, Chest)
+        end
+    end
+    DistanceFromPlrSort(Chests)
+    return Chests
+end
 
-local function toggleNoclip(Toggle)  
-    for _, v in pairs(getCharacter():GetChildren()) do  
-        if v.ClassName == "Part" then  
-            v.CanCollide = not Toggle  
-        end  
-    end  
-end  
+local function toggleNoclip(Toggle)
+    for _, v in pairs(getCharacter():GetChildren()) do
+        if v.ClassName == "Part" then
+            v.CanCollide = not Toggle
+        end
+    end
+end
 
-local function Teleport(Goal, Speed)  
-    Speed = Speed or MaxSpeed  
-    toggleNoclip(true)  
-    local RootPart = getCharacter().HumanoidRootPart  
-    local Magnitude = (RootPart.Position - Goal.Position).Magnitude  
-
-    while not (Magnitude < 1) do  
-        local Direction = (Goal.Position - RootPart.Position).Unit  
-        RootPart.CFrame = RootPart.CFrame + Direction * (Speed * task.wait())  
-        Magnitude = (RootPart.Position - Goal.Position).Magnitude  
-    end  
-    
+local function Teleport(Goal, Speed)
+    Speed = Speed or MaxSpeed
+    toggleNoclip(true)
+    local RootPart = getCharacter().HumanoidRootPart
+    local Magnitude = (RootPart.Position - Goal.Position).Magnitude
+    while not (Magnitude < 1) do
+        local Direction = (Goal.Position - RootPart.Position).Unit
+        RootPart.CFrame = RootPart.CFrame + Direction * (Speed * task.wait())
+        Magnitude = (RootPart.Position - Goal.Position).Magnitude
+    end
     local Humanoid = getCharacter().Humanoid
     Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
     task.wait(0.1)
-    
-    toggleNoclip(false)  
-end  
+    toggleNoclip(false)
+end
 
-local function main()  
-    while task.wait() do  
-        local Chests = getChestsSorted()  
-        if #Chests > 0 then  
-            Teleport(Chests[1].CFrame)  
+local function main()
+    while task.wait() do
+        local Chests = getChestsSorted()
+        if #Chests > 0 then
+            Teleport(Chests[1].CFrame)
         else
             task.wait(15)
             local Chests2 = getChestsSorted()
@@ -336,8 +337,8 @@ local function main()
                 end
                 return
             end
-        end  
-    end  
-end  
+        end
+    end
+end
 
 main()
